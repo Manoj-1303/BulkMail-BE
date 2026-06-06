@@ -51,6 +51,8 @@ app.post("/sendemail", (req, res) => {
         })
     }).catch(function (error) {
         console.error("Error finding credentials", error);
+        
+        res.send(false);
     });
 
 })

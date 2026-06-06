@@ -5,7 +5,10 @@ const nodemailer = require('nodemailer');
 const mongoose = require('mongoose');
 require('dotenv').config();
 
-app.use(cors());
+app.use(cors({
+    origin: ["http://localhost:5173", "https://bulk-mail-fe.vercel.app"]
+}));
+
 app.use(express.json());
 
 mongoose.connect(process.env.PASS_KEY).then(function () {
@@ -20,6 +23,7 @@ app.post("/sendemail", (req, res) => {
     var msg = req.body.msg;
     var subject = req.body.subject;
     var emailList = req.body.emails;
+
     credential.find().then(function (data) {
         const transporter = nodemailer.createTransport({
             service: 'gmail',
@@ -28,6 +32,7 @@ app.post("/sendemail", (req, res) => {
                 pass: data[0].toJSON().pass
             }
         });
+
         new Promise(async (resolve, reject) => {
             try {
                 for (var i = 0; i < emailList.length; i++) {
@@ -39,9 +44,10 @@ app.post("/sendemail", (req, res) => {
                     });
                     console.log("Email sent to " + emailList[i]);
                 }
-                resolve("Success")
+                resolve("Success");
             }
             catch (error) {
+                console.log("NODEMAILER ERROR: ", error); 
                 reject("Failed");
             }
         }).then(function () {
@@ -51,11 +57,10 @@ app.post("/sendemail", (req, res) => {
         })
     }).catch(function (error) {
         console.error("Error finding credentials", error);
-        
         res.send(false);
     });
+});
 
-})
 app.listen(5000, () => {
     console.log('Server is running on port 5000');
 });

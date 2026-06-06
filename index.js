@@ -3,11 +3,12 @@ const cors = require('cors');
 const app = express();
 const nodemailer = require('nodemailer');
 const mongoose = require('mongoose');
+require('dotenv').config();
 
 app.use(cors());
 app.use(express.json());
 
-mongoose.connect('mongodb://manojh:123@ac-hepfqjc-shard-00-00.zehkuft.mongodb.net:27017,ac-hepfqjc-shard-00-01.zehkuft.mongodb.net:27017,ac-hepfqjc-shard-00-02.zehkuft.mongodb.net:27017/passkey?ssl=true&replicaSet=atlas-1qyl8q-shard-0&authSource=admin&appName=Manoj').then(function () {
+mongoose.connect(process.env.PASS_KEY).then(function () {
     console.log("Connected to DB");
 }).catch(function (err) {
     console.error("Full DB Error:", err);

@@ -11,7 +11,7 @@ app.use(cors({
 
 app.use(express.json());
 
-sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+sgMail.setApiKey('SG.YOUR_ACTUAL_API_KEY_HERE');
 app.get('/', (req, res) => {
     res.send("Bulk mail backend service is running with SendGrid");
 });

@@ -4,14 +4,12 @@ const cors = require('cors');
 const sgMail = require('@sendgrid/mail');
 
 const app = express();
-
-app.use(cors({
-    origin: ["http://localhost:5173", "https://bulk-mail-fe.vercel.app"]
-}));
-
+app.use(cors());
 app.use(express.json());
 
-sgMail.setApiKey('SG.YOUR_ACTUAL_API_KEY_HERE');
+console.log("SENDGRID_API_KEY loaded:", process.env.SENDGRID_API_KEY ? "Yes, starts with " + process.env.SENDGRID_API_KEY.substring(0,3) : "No key found!");
+
+sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 app.get('/', (req, res) => {
     res.send("Bulk mail backend service is running with SendGrid");
 });

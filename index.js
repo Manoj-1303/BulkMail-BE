@@ -1,9 +1,9 @@
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
+const sgMail = require('@sendgrid/mail');
+
 const app = express();
-const nodemailer = require('nodemailer');
-const mongoose = require('mongoose');
-require('dotenv').config();
 
 app.use(cors({
     origin: ["http://localhost:5173", "https://bulk-mail-fe.vercel.app"]
@@ -11,58 +11,46 @@ app.use(cors({
 
 app.use(express.json());
 
-mongoose.connect(process.env.PASS_KEY).then(function () {
-    console.log("Connected to DB");
-}).catch(function (err) {
-    console.error("Full DB Error:", err);
+sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+app.get('/', (req, res) => {
+    res.send("Bulk mail backend service is running with SendGrid");
 });
 
-const credential = mongoose.model("credential", {}, "bulkmail");
+app.post("/sendmail", async (req, res) => {
+    try {
+        const { subject, msg, emaildata } = req.body;
 
-app.post("/sendemail", (req, res) => {
-    var msg = req.body.msg;
-    var subject = req.body.subject;
-    var emailList = req.body.emails;
+        if (!emaildata || !emaildata.length) {
+            return res.status(400).json({ success: false, error: "No emails provided" });
+        }
 
-    credential.find().then(function (data) {
-        const transporter = nodemailer.createTransport({
-            host: "smtp.gmail.com",
-            port: 465,
-            secure: true,
-            auth: {
-                user: data[0].toJSON().user,
-                pass: data[0].toJSON().pass
-            }
+        await sgMail.sendMultiple({
+            to: emaildata,
+            from: process.env.SENDER_EMAIL,
+            subject: subject,
+            html: `
+            <h3>Hello,</h3>
+            <p>${msg}</p>
+            <br/>
+            <p>Regards,<br/>Bulk Mail App</p>`
         });
-
-        new Promise(async (resolve, reject) => {
-            try {
-                for (var i = 0; i < emailList.length; i++) {
-                    await transporter.sendMail({
-                        from: 'manojharibabu13@gmail.com',
-                        to: emailList[i],
-                        subject: subject,
-                        text: msg,
-                    });
-                    console.log("Email sent to " + emailList[i]);
-                }
-                resolve("Success");
-            }
-            catch (error) {
-                console.log("NODEMAILER ERROR: ", error);
-                reject("Failed");
-            }
-        }).then(function () {
-            res.send(true);
-        }).catch(function () {
-            res.send(false);
-        })
-    }).catch(function (error) {
-        console.error("Error finding credentials", error);
-        res.send(false);
-    });
+        res.json({
+            success: true, 
+            count: emaildata.length
+        });
+    } catch (err) {
+        console.error("Full Error:", err);
+        if (err.response) {
+            console.error('SendGrid response body:', err.response.body);
+        }
+        res.status(500).json({
+            success: false,
+            error: err.message
+        });
+    }
 });
 
-app.listen(5000, () => {
-    console.log('Server is running on port 5000');
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
 });

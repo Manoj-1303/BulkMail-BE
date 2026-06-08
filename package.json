@@ -11,10 +11,9 @@
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
+    "@sendgrid/mail": "^8.1.6",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
-    "express": "^5.2.1",
-    "mongoose": "^9.6.3",
-    "nodemailer": "^8.0.10"
+    "express": "^5.2.1"
   }
 }
